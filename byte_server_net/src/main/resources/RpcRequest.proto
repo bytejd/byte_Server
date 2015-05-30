@@ -1,0 +1,18 @@
+package net;
+option java_package = "com.bytes.net.proto";
+option java_outer_classname = "ByteNetProto";
+option optimize_for = LITE_RUNTIME;
+
+
+
+message RpcRequest{
+    required string method = 1;
+    required bytes requestData = 2;
+    required int64 seqNum = 3;//每一次调用都对应个序列号，序列号是唯一的
+}
+
+message RpcResponse{
+    required bytes responseData = 1;
+    required int64 seqNum = 2;
+}
+
