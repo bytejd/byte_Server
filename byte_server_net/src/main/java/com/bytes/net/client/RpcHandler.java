@@ -12,13 +12,12 @@ import java.util.concurrent.LinkedBlockingDeque;
  *         2015-05-29 15:24
  *         功能介绍:
  */
-public class ResponseHandler extends SimpleChannelInboundHandler<ByteNetProto.RpcResponse> {
-    private static BlockingQueue<byte[]> result = new LinkedBlockingDeque<byte[]>();
+public class RpcHandler extends SimpleChannelInboundHandler<ByteNetProto.RpcResponse> {
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteNetProto.RpcResponse msg) throws Exception {
-        result.put(msg.getResponseData().toByteArray());
+
     }
-    public static byte[] syncGetResult() throws InterruptedException {
-        return result.take();
-    }
+
+
 }

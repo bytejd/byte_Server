@@ -12,7 +12,7 @@ public class ClientTest {
     private RPCClient rpcClient;
     @Before
     public void before(){
-        rpcClient = new RPCClient("127.0.0.1",1228);
+ //       rpcClient = new RPCClient("127.0.0.1",1228);
     }
 
     @Test

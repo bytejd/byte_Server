@@ -13,7 +13,7 @@ import io.netty.handler.codec.protobuf.ProtobufEncoder;
 /**
  * @author zhangxiaojie
  *         2015-05-29 15:11
- *         功能介绍:
+ *         功能介绍:负责client端的初始化
  */
 public class RPCClientInitializer extends ChannelInitializer<SocketChannel> {
     @Override
