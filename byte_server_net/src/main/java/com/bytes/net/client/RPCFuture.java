@@ -28,7 +28,6 @@ public class RPCFuture implements Future<RpcResponse>{
     static class Sync extends AbstractQueuedSynchronizer {
 
         private static final long serialVersionUID = 1L;
-
         //future status
         private final int done = 1;
         private final int pending = 0;
@@ -102,8 +101,9 @@ public class RPCFuture implements Future<RpcResponse>{
         }
     }
 
+
     private RpcResponse processResponse() {
-        return null;
+        return this.rpcContext.getRpcResponse();
     }
 
 
