@@ -25,6 +25,6 @@ public class RPCClientInitializer extends ChannelInitializer<SocketChannel> {
         channelPipeline.addLast("protobufEncoder", new ProtobufEncoder());
 
         //response
-        channelPipeline.addLast("responseHandler",new ResponseHandler());
+        channelPipeline.addLast("responseHandler",new RpcHandler());
     }
 }
