@@ -43,6 +43,7 @@ public class RpcClient {
     private ReentrantLock lock = new ReentrantLock();
     private Condition connectedCondition = lock.newCondition();//是否连接成功
     private AtomicInteger roundRobin = new AtomicInteger(0);
+    private long  connectTimeout =  10000;//10ms
 
 
     /**
@@ -87,11 +88,21 @@ public class RpcClient {
         }
     }
 
+    private boolean waitingForHandler() throws InterruptedException{
+        lock.lock();
+        try{
+            return connectedCondition.await(this.connectTimeout, TimeUnit.MILLISECONDS);
+        }finally{
+            lock.unlock();
+        }
+    }
+
+
     private void reconnect(final Channel failedChannel, final InetSocketAddress remoteAddress, long delay) {
         connect(remoteAddress, delay);
     }
 
-    private void connect(final InetSocketAddress remoteAddress, long delay) {
+    private void connect(final InetSocketAddress remoteAddress, final long delay) {
         this.eventLoopGroup.schedule(new Runnable() {
             @Override
 
@@ -117,12 +128,11 @@ public class RpcClient {
                     });
 
                 } catch (Exception e) {
-
-                } finally {
-                    // Shut down executor threads to exit.
-                    group.shutdownGracefully();
+                    logger.error("error when make connection", e);
+                    connect(remoteAddress,delay);
                 }
             }
+
         }, delay, TimeUnit.MILLISECONDS);
     }
 
@@ -140,13 +150,14 @@ public class RpcClient {
     }
 
 
-    private RpcHandler chooseHandler() {
+    private RpcHandler chooseHandler() throws InterruptedException {
         Map<InetSocketAddress, RpcHandler> addressRpcHandlerMap = Maps.newHashMap(connectedSocketHandlerMap);
         if (addressRpcHandlerMap.size() == 0) {
-            try {
-                connectedCondition.await();
-            } catch (InterruptedException e) {
-                logger.error("await when choose handler");
+            boolean isSuccess = this.waitingForHandler();
+            if(isSuccess){
+                return this.chooseHandler();
+            }else {
+                throw new RuntimeException("time out when connect connect");
             }
         } else {
             int nextHandlerNum = roundRobin.getAndAdd(1) % addressRpcHandlerMap.size();
@@ -157,6 +168,7 @@ public class RpcClient {
                 }
             }
         }
+
         throw new IllegalStateException("can not reach here");
     }
 

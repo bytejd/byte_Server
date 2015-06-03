@@ -12,9 +12,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 public class RequestHandler extends SimpleChannelInboundHandler<RpcRequest> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcRequest msg) throws Exception {
-        System.out.println(msg.getMethod());
-        RpcResponse rpcResponse = RpcResponse.newBuilder().setSeqNum(msg.getSeqNum()).setResponseData(ByteString.copyFrom("中国你好".getBytes())).build();
+        RpcResponse rpcResponse = RpcResponse.newBuilder().setSeqNum(msg.getSeqNum()).setResponseData(ByteString.copyFrom("response:中国你好".getBytes())).build();
         ctx.writeAndFlush(rpcResponse);
-        ctx.close();
     }
 }
