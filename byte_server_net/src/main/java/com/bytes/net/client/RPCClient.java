@@ -1,8 +1,11 @@
 package com.bytes.net.client;
 
+import com.bytes.net.proto.ByteNetProto.*;
+import com.bytes.net.utils.Seq;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.protobuf.ByteString;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -19,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -27,43 +31,40 @@ import java.util.concurrent.locks.ReentrantLock;
  *         2015-05-29 15:07
  *         功能介绍:
  */
-public class RPCClient {
+public class RpcClient {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     //all to connect servers
     private Set<InetSocketAddress> allToConnectServers = Sets.newConcurrentHashSet();
 
     //每个主机一个连接
-    private Map<InetSocketAddress,RpcHandler> connectedSocketHandlerMap = Maps.newConcurrentMap();
+    private Map<InetSocketAddress, RpcHandler> connectedSocketHandlerMap = Maps.newConcurrentMap();
 
     private EventLoopGroup eventLoopGroup;
-
     private ReentrantLock lock = new ReentrantLock();
     private Condition connectedCondition = lock.newCondition();//是否连接成功
-
-
+    private AtomicInteger roundRobin = new AtomicInteger(0);
 
 
     /**
-     *
      * @param servers tcp://192.168.6.238:1222,tcp://192.168.6.238:1221 or zns://zoo1:1221/appName/
      */
-    public RPCClient(String servers){
-        if(StringUtils.isBlank(servers)){
+    public RpcClient(String servers) {
+        if (StringUtils.isBlank(servers)) {
             throw new IllegalArgumentException("servers should not be null or empty");
         }
         List<String> serverList = Splitter.on(",").splitToList(servers);
-        if(serverList.size() > 1){
-            for(String server : serverList){
-                if(!server.startsWith("tcp://")){
-                    throw  new IllegalArgumentException("bad server format");
+        if (serverList.size() > 1) {
+            for (String server : serverList) {
+                if (!server.startsWith("tcp://")) {
+                    throw new IllegalArgumentException("bad server format");
                 }
                 List<String> hostPortPair = Splitter.on(":").splitToList(server.substring(6));
-                if(hostPortPair.size() != 2){
-                    throw  new IllegalArgumentException("bad server format");
+                if (hostPortPair.size() != 2) {
+                    throw new IllegalArgumentException("bad server format");
                 }
-                allToConnectServers.add(new InetSocketAddress(hostPortPair.get(0),Integer.parseInt(hostPortPair.get(1))));
+                allToConnectServers.add(new InetSocketAddress(hostPortPair.get(0), Integer.parseInt(hostPortPair.get(1))));
             }
-        }else {
+        } else {
             String server = serverList.get(0);
             if (server.startsWith("tcp://")) {
                 List<String> hostPortPair = Splitter.on(":").splitToList(server.substring(6));
@@ -81,90 +82,92 @@ public class RPCClient {
 
         eventLoopGroup = new NioEventLoopGroup(2);
 
-        for(InetSocketAddress inetSocketAddress : allToConnectServers){
-            connect(inetSocketAddress,0);
+        for (InetSocketAddress inetSocketAddress : allToConnectServers) {
+            connect(inetSocketAddress, 0);
         }
     }
 
-   private void reconnect(final Channel failedChannel,final InetSocketAddress remoteAddress,long delay){
-       connect(remoteAddress,delay);
-   }
+    private void reconnect(final Channel failedChannel, final InetSocketAddress remoteAddress, long delay) {
+        connect(remoteAddress, delay);
+    }
 
-
-
-    private void connect(final InetSocketAddress remoteAddress,long delay) {
+    private void connect(final InetSocketAddress remoteAddress, long delay) {
         this.eventLoopGroup.schedule(new Runnable() {
             @Override
+
             public void run() {
                 EventLoopGroup group = new NioEventLoopGroup();
                 try {
                     Bootstrap b = new Bootstrap();
                     b.group(group)
                             .channel(NioSocketChannel.class)
-                            .handler(new RPCClientInitializer());
+                            .handler(new RpcClientInitializer());
                     // Make the connection attempt.
                     ChannelFuture channelFuture = b.connect(remoteAddress);
-                    channelFuture.addListener(new ChannelFutureListener(){
+                    channelFuture.addListener(new ChannelFutureListener() {
                         @Override
                         public void operationComplete(final ChannelFuture channelFuture) throws Exception {
-                            if(!channelFuture.isSuccess()){
+                            if (!channelFuture.isSuccess()) {
                                 logger.info("Can't connect to remote server. remote peer=" + remoteAddress.toString());
-                         //       reconnect(channelFuture.channel(), remotePeer );
-                            }else{
+                            } else {
                                 logger.info("Successfully connect to remote server. |remote peer=" + remoteAddress.toString());
                                 successConnect(remoteAddress, channelFuture);
-//                                DefaultClientHandler handler = channelFuture.channel().pipeline().get(DefaultClientHandler.class);
-//                                addHandler(handler);
                             }
                         }
                     });
 
-                } catch (Exception e){
+                } catch (Exception e) {
 
-                }finally {
+                } finally {
                     // Shut down executor threads to exit.
                     group.shutdownGracefully();
                 }
             }
-        },delay, TimeUnit.MILLISECONDS);
+        }, delay, TimeUnit.MILLISECONDS);
     }
 
-    private void successConnect(final InetSocketAddress remoteAddress,final ChannelFuture channelFuture){
-        RpcHandler rpcHandler =   channelFuture.channel().pipeline().get(RpcHandler.class);
-        if(rpcHandler != null){
-            this.connectedSocketHandlerMap.put(remoteAddress,rpcHandler);
+    private void successConnect(final InetSocketAddress remoteAddress, final ChannelFuture channelFuture) {
+        RpcHandler rpcHandler = channelFuture.channel().pipeline().get(RpcHandler.class);
+        if (rpcHandler != null) {
+            this.connectedSocketHandlerMap.put(remoteAddress, rpcHandler);
         }
         lock.lock();
-        try{
+        try {
             connectedCondition.signalAll();
-        }finally {
+        } finally {
             lock.unlock();
         }
     }
 
 
-    public byte[] syncCall(String methodName,byte[] requestData) throws Exception {
+    private RpcHandler chooseHandler() {
+        Map<InetSocketAddress, RpcHandler> addressRpcHandlerMap = Maps.newHashMap(connectedSocketHandlerMap);
+        if (addressRpcHandlerMap.size() == 0) {
+            try {
+                connectedCondition.await();
+            } catch (InterruptedException e) {
+                logger.error("await when choose handler");
+            }
+        } else {
+            int nextHandlerNum = roundRobin.getAndAdd(1) % addressRpcHandlerMap.size();
+            int i = 0;
+            for (Map.Entry<InetSocketAddress, RpcHandler> entry : addressRpcHandlerMap.entrySet()) {
+                if (i == nextHandlerNum) {
+                    return entry.getValue();
+                }
+            }
+        }
+        throw new IllegalStateException("can not reach here");
+    }
 
 
-
-        // Configure the client.
-//        EventLoopGroup group = new NioEventLoopGroup();
-//        try {
-//            Bootstrap b = new Bootstrap();
-//            b.group(group)
-//                    .channel(NioSocketChannel.class)
-//                    .handler(new RPCClientInitializer());
-//            // Make the connection attempt.
-//            Channel ch = b.connect(remoteHost, port).sync().channel();
-//            ByteNetProto.RpcRequest rpcRequest = ByteNetProto.RpcRequest.newBuilder().setMethod(methodName).setRequestData(ByteString.copyFrom(requestData)).build();
-//            ch.writeAndFlush(rpcRequest);
-//            return ResponseHandler.syncGetResult();
-//        } catch (InterruptedException e) {
-//            throw new Exception("error when syncCallRemote");
-//        } finally {
-//            // Shut down executor threads to exit.
-//            group.shutdownGracefully();
-//        }
-        return null;
+    public byte[] syncCall(String methodName, byte[] requestData, long timeOutInMilliseconds) throws Exception {
+        RpcContext rpcContext = new RpcContext();
+        RpcRequest rpcRequest = RpcRequest.newBuilder().setRequestData(ByteString.copyFrom(requestData))
+                .setMethod(methodName).setSeqNum(Seq.nextSeq().toLong()).build();
+        rpcContext.setRpcRequest(rpcRequest);
+        RpcHandler rpcHandler = this.chooseHandler();
+        RpcFuture rpcFuture = rpcHandler.doRPC(rpcContext);
+        return rpcFuture.get(timeOutInMilliseconds, TimeUnit.MILLISECONDS).getResponseData().toByteArray();
     }
 }

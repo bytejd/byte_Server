@@ -15,7 +15,7 @@ import io.netty.handler.codec.protobuf.ProtobufEncoder;
  *         2015-05-29 15:11
  *         功能介绍:负责client端的初始化
  */
-public class RPCClientInitializer extends ChannelInitializer<SocketChannel> {
+public class RpcClientInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline channelPipeline = ch.pipeline();
@@ -25,6 +25,6 @@ public class RPCClientInitializer extends ChannelInitializer<SocketChannel> {
         channelPipeline.addLast("protobufEncoder", new ProtobufEncoder());
 
         //response
-        channelPipeline.addLast("responseHandler",new RpcHandler());
+        channelPipeline.addLast("rpcHandler",new RpcHandler());
     }
 }

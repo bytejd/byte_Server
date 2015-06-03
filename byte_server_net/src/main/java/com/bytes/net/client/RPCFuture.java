@@ -15,7 +15,7 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
  *         2015-06-01 15:22
  *         功能介绍:调用future
  */
-public class RPCFuture implements Future<RpcResponse>{
+public class RpcFuture implements Future<RpcResponse>{
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private Sync sync;
@@ -51,7 +51,7 @@ public class RPCFuture implements Future<RpcResponse>{
         }
     }
 
-    public RPCFuture(RpcContext rpcContext,RpcHandler handler) {
+    public RpcFuture(RpcContext rpcContext, RpcHandler handler) {
         this.rpcContext = rpcContext;
         this.handler = handler;
         this.sync = new Sync();

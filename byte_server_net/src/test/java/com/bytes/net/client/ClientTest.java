@@ -9,7 +9,7 @@ import org.junit.Test;
  *         功能介绍:
  */
 public class ClientTest {
-    private RPCClient rpcClient;
+    private RpcClient rpcClient;
     @Before
     public void before(){
  //       rpcClient = new RPCClient("127.0.0.1",1228);

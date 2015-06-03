@@ -35,6 +35,24 @@ public final class ByteNetProto {
      * <code>required bytes requestData = 2;</code>
      */
     com.google.protobuf.ByteString getRequestData();
+
+    // required int64 seqNum = 3;
+    /**
+     * <code>required int64 seqNum = 3;</code>
+     *
+     * <pre>
+     *每一次调用都对应个序列号，序列号是唯一的
+     * </pre>
+     */
+    boolean hasSeqNum();
+    /**
+     * <code>required int64 seqNum = 3;</code>
+     *
+     * <pre>
+     *每一次调用都对应个序列号，序列号是唯一的
+     * </pre>
+     */
+    long getSeqNum();
   }
   /**
    * Protobuf type {@code net.RpcRequest}
@@ -87,6 +105,11 @@ public final class ByteNetProto {
             case 18: {
               bitField0_ |= 0x00000002;
               requestData_ = input.readBytes();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              seqNum_ = input.readInt64();
               break;
             }
           }
@@ -175,9 +198,34 @@ public final class ByteNetProto {
       return requestData_;
     }
 
+    // required int64 seqNum = 3;
+    public static final int SEQNUM_FIELD_NUMBER = 3;
+    private long seqNum_;
+    /**
+     * <code>required int64 seqNum = 3;</code>
+     *
+     * <pre>
+     *每一次调用都对应个序列号，序列号是唯一的
+     * </pre>
+     */
+    public boolean hasSeqNum() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required int64 seqNum = 3;</code>
+     *
+     * <pre>
+     *每一次调用都对应个序列号，序列号是唯一的
+     * </pre>
+     */
+    public long getSeqNum() {
+      return seqNum_;
+    }
+
     private void initFields() {
       method_ = "";
       requestData_ = com.google.protobuf.ByteString.EMPTY;
+      seqNum_ = 0L;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -189,6 +237,10 @@ public final class ByteNetProto {
         return false;
       }
       if (!hasRequestData()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasSeqNum()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -205,6 +257,9 @@ public final class ByteNetProto {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBytes(2, requestData_);
       }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt64(3, seqNum_);
+      }
     }
 
     private int memoizedSerializedSize = -1;
@@ -220,6 +275,10 @@ public final class ByteNetProto {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, requestData_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, seqNum_);
       }
       memoizedSerializedSize = size;
       return size;
@@ -316,6 +375,8 @@ public final class ByteNetProto {
         bitField0_ = (bitField0_ & ~0x00000001);
         requestData_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000002);
+        seqNum_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -347,6 +408,10 @@ public final class ByteNetProto {
           to_bitField0_ |= 0x00000002;
         }
         result.requestData_ = requestData_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.seqNum_ = seqNum_;
         result.bitField0_ = to_bitField0_;
         return result;
       }
@@ -361,6 +426,9 @@ public final class ByteNetProto {
         if (other.hasRequestData()) {
           setRequestData(other.getRequestData());
         }
+        if (other.hasSeqNum()) {
+          setSeqNum(other.getSeqNum());
+        }
         return this;
       }
 
@@ -370,6 +438,10 @@ public final class ByteNetProto {
           return false;
         }
         if (!hasRequestData()) {
+          
+          return false;
+        }
+        if (!hasSeqNum()) {
           
           return false;
         }
@@ -505,6 +577,55 @@ public final class ByteNetProto {
         return this;
       }
 
+      // required int64 seqNum = 3;
+      private long seqNum_ ;
+      /**
+       * <code>required int64 seqNum = 3;</code>
+       *
+       * <pre>
+       *每一次调用都对应个序列号，序列号是唯一的
+       * </pre>
+       */
+      public boolean hasSeqNum() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required int64 seqNum = 3;</code>
+       *
+       * <pre>
+       *每一次调用都对应个序列号，序列号是唯一的
+       * </pre>
+       */
+      public long getSeqNum() {
+        return seqNum_;
+      }
+      /**
+       * <code>required int64 seqNum = 3;</code>
+       *
+       * <pre>
+       *每一次调用都对应个序列号，序列号是唯一的
+       * </pre>
+       */
+      public Builder setSeqNum(long value) {
+        bitField0_ |= 0x00000004;
+        seqNum_ = value;
+        
+        return this;
+      }
+      /**
+       * <code>required int64 seqNum = 3;</code>
+       *
+       * <pre>
+       *每一次调用都对应个序列号，序列号是唯一的
+       * </pre>
+       */
+      public Builder clearSeqNum() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        seqNum_ = 0L;
+        
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:net.RpcRequest)
     }
 
@@ -528,6 +649,16 @@ public final class ByteNetProto {
      * <code>required bytes responseData = 1;</code>
      */
     com.google.protobuf.ByteString getResponseData();
+
+    // required int64 seqNum = 2;
+    /**
+     * <code>required int64 seqNum = 2;</code>
+     */
+    boolean hasSeqNum();
+    /**
+     * <code>required int64 seqNum = 2;</code>
+     */
+    long getSeqNum();
   }
   /**
    * Protobuf type {@code net.RpcResponse}
@@ -577,6 +708,11 @@ public final class ByteNetProto {
               responseData_ = input.readBytes();
               break;
             }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              seqNum_ = input.readInt64();
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -620,8 +756,25 @@ public final class ByteNetProto {
       return responseData_;
     }
 
+    // required int64 seqNum = 2;
+    public static final int SEQNUM_FIELD_NUMBER = 2;
+    private long seqNum_;
+    /**
+     * <code>required int64 seqNum = 2;</code>
+     */
+    public boolean hasSeqNum() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required int64 seqNum = 2;</code>
+     */
+    public long getSeqNum() {
+      return seqNum_;
+    }
+
     private void initFields() {
       responseData_ = com.google.protobuf.ByteString.EMPTY;
+      seqNum_ = 0L;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -629,6 +782,10 @@ public final class ByteNetProto {
       if (isInitialized != -1) return isInitialized == 1;
 
       if (!hasResponseData()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasSeqNum()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -642,6 +799,9 @@ public final class ByteNetProto {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, responseData_);
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt64(2, seqNum_);
+      }
     }
 
     private int memoizedSerializedSize = -1;
@@ -653,6 +813,10 @@ public final class ByteNetProto {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(1, responseData_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(2, seqNum_);
       }
       memoizedSerializedSize = size;
       return size;
@@ -747,6 +911,8 @@ public final class ByteNetProto {
         super.clear();
         responseData_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000001);
+        seqNum_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -774,6 +940,10 @@ public final class ByteNetProto {
           to_bitField0_ |= 0x00000001;
         }
         result.responseData_ = responseData_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.seqNum_ = seqNum_;
         result.bitField0_ = to_bitField0_;
         return result;
       }
@@ -783,11 +953,18 @@ public final class ByteNetProto {
         if (other.hasResponseData()) {
           setResponseData(other.getResponseData());
         }
+        if (other.hasSeqNum()) {
+          setSeqNum(other.getSeqNum());
+        }
         return this;
       }
 
       public final boolean isInitialized() {
         if (!hasResponseData()) {
+          
+          return false;
+        }
+        if (!hasSeqNum()) {
           
           return false;
         }
@@ -845,6 +1022,39 @@ public final class ByteNetProto {
       public Builder clearResponseData() {
         bitField0_ = (bitField0_ & ~0x00000001);
         responseData_ = getDefaultInstance().getResponseData();
+        
+        return this;
+      }
+
+      // required int64 seqNum = 2;
+      private long seqNum_ ;
+      /**
+       * <code>required int64 seqNum = 2;</code>
+       */
+      public boolean hasSeqNum() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required int64 seqNum = 2;</code>
+       */
+      public long getSeqNum() {
+        return seqNum_;
+      }
+      /**
+       * <code>required int64 seqNum = 2;</code>
+       */
+      public Builder setSeqNum(long value) {
+        bitField0_ |= 0x00000002;
+        seqNum_ = value;
+        
+        return this;
+      }
+      /**
+       * <code>required int64 seqNum = 2;</code>
+       */
+      public Builder clearSeqNum() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        seqNum_ = 0L;
         
         return this;
       }
